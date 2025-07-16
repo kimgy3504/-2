@@ -71,6 +71,3 @@ if st.button("📌 출석 기록 저장"):
 
 st.subheader("📊 출석 기록")
 st.dataframe(st.session_state.attendance)
-
-if st.download_button("출석부 CSV 다운로드", st.session_state.attendance.to_csv(index=False).encode("utf-8"), "attendance.csv"):
-    st.success("다운로드 완료!")
