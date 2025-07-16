@@ -35,7 +35,7 @@ if name:
         ]["상태"].values[0]
         st.info(f"{name}님은 이미 '{state}'으로 처리되었습니다.")
     else:
-        # 결석 여부 체크
+        # 출석 / 결석 선택
         is_absent = st.radio("상태 선택", ["출석", "결석"], key=f"radio_{name}")
         reason = ""
         if is_absent == "결석":
@@ -44,7 +44,8 @@ if name:
         if st.button("기록 저장"):
             st.session_state.attendance.loc[len(st.session_state.attendance)] = [date_str, name, is_absent, reason]
             st.success(f"{name}님의 '{is_absent}' 기록이 저장되었습니다.")
-            st.experimental_rerun()
+            st.rerun()  # 최신 버전 streamlit 기준
+            # st.experimental_rerun()  # 이전 버전 streamlit에서는 이 줄을 사용하세요
 
 # 출석 기록 보기
 st.subheader("📊 출석 기록")
