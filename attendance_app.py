@@ -9,48 +9,52 @@ students = ["홍길동", "김철수", "이영희"]
 if "attendance" not in st.session_state:
     st.session_state.attendance = pd.DataFrame(columns=["날짜", "이름", "상태", "사유"])
 
-st.title("📝 출석부 프로그램")
+st.title("📝 출석부 (결석자만 체크)")
 
 # 날짜 선택
 date = st.date_input("출석 날짜", datetime.date.today())
 date_str = pd.to_datetime(date).strftime("%Y-%m-%d")
 
 # 이미 기록된 이름 리스트
-def get_recorded_names(attendance_df, date_str):
-    return attendance_df[attendance_df["날짜"] == date_str]["이름"].tolist()
+recorded_names = st.session_state.attendance[
+    st.session_state.attendance["날짜"] == date_str]["이름"].tolist()
 
-recorded_names = get_recorded_names(st.session_state.attendance, date_str)
+st.subheader("🙋‍♂️ 결석자 체크")
 
-st.subheader("✅ 출석 체크")
+absent_students = []
+reasons = {}
 
-# 이름 선택
-name = st.selectbox("이름을 선택하세요", [""] + students)
-
-if name:
+for name in students:
     if name in recorded_names:
-        # 이미 기록된 경우
         state = st.session_state.attendance[
             (st.session_state.attendance["날짜"] == date_str) &
             (st.session_state.attendance["이름"] == name)
         ]["상태"].values[0]
-        st.info(f"{name}님은 이미 '{state}'으로 처리되었습니다.")
+        st.markdown(f"✅ **{name}**: 이미 '{state}' 처리됨")
     else:
-        # 출석 / 결석 선택
-        is_absent = st.radio("상태 선택", ["출석", "결석"], key=f"radio_{name}")
-        reason = ""
-        if is_absent == "결석":
-            reason = st.text_input("결석 사유를 입력해주세요", key=f"reason_{name}")
+        is_absent = st.checkbox(f"{name} 결석", key=f"{name}_absent")
+        if is_absent:
+            absent_students.append(name)
+            reasons[name] = st.text_input(f"{name} 결석 사유", key=f"{name}_reason")
 
-        if st.button("기록 저장"):
-            st.session_state.attendance.loc[len(st.session_state.attendance)] = [date_str, name, is_absent, reason]
-            st.success(f"{name}님의 '{is_absent}' 기록이 저장되었습니다.")
-            st.rerun()  # 최신 버전 streamlit 기준
-            # st.experimental_rerun()  # 이전 버전 streamlit에서는 이 줄을 사용하세요
+# 저장 버튼
+if st.button("📌 출석 기록 저장"):
+    for name in students:
+        if name in recorded_names:
+            continue  # 중복 방지
 
-# 출석 기록 보기
+        if name in absent_students:
+            reason = reasons.get(name, "")
+            st.session_state.attendance.loc[len(st.session_state.attendance)] = [date_str, name, "결석", reason]
+        else:
+            st.session_state.attendance.loc[len(st.session_state.attendance)] = [date_str, name, "출석", ""]
+    st.success("출석 기록이 저장되었습니다.")
+    st.rerun()
+
+# 출석 결과 보기
 st.subheader("📊 출석 기록")
 st.dataframe(st.session_state.attendance)
 
-# CSV 다운로드
+# 다운로드
 if st.download_button("출석부 CSV 다운로드", st.session_state.attendance.to_csv(index=False).encode("utf-8"), "attendance.csv"):
     st.success("다운로드 완료!")
