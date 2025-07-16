@@ -138,7 +138,7 @@ else:
             })
     st.session_state.temp_attendance = pd.DataFrame(rows)
     if not st.session_state.final_attendance.empty:
-    st.subheader("📈 출석 요약 정보")
+     st.subheader("📈 출석 요약 정보")
     summary = (
         st.session_state.final_attendance
         .groupby(["날짜", "차시", "상태"])
