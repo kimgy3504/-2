@@ -73,7 +73,7 @@ if "temp_attendance" not in st.session_state or st.session_state.temp_attendance
     st.info("임시 저장된 출석 기록이 없습니다.")
 else:
     sorted_temp = st.session_state.temp_attendance.sort_values(by=["날짜", "이름"]).reset_index(drop=True)
-    edited_df = st.data_editor(sorted_temp, num_rows="dynamic")
+    edited_df = st.data_editor(sorted_temp, num_rows="dynamic", key="temp_editor")
     st.session_state.temp_attendance = edited_df.sort_values(by=["날짜", "이름"]).reset_index(drop=True)
 
 # 최종 저장 버튼
@@ -106,5 +106,5 @@ if "final_attendance" not in st.session_state or st.session_state.final_attendan
     st.info("최종 저장된 출석 기록이 없습니다.")
 else:
     sorted_final = st.session_state.final_attendance.sort_values(by=["날짜", "이름"]).reset_index(drop=True)
-    edited_final = st.data_editor(sorted_final, num_rows="dynamic")
+    edited_final = st.data_editor(sorted_final, num_rows="dynamic", key="final_editor")
     st.session_state.final_attendance = edited_final.sort_values(by=["날짜", "이름"]).reset_index(drop=True)
