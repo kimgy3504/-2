@@ -24,12 +24,16 @@ regular_absents = {
 st.title("📝 출석부 (1,2차시 분리 + 정기 결석 반영 + 학생별 기록)")
 
 # 자동 초기화
-today = datetime.date.today()
-last_date = st.session_state.get("last_date", None)
-if last_date != today:
+# 날짜 선택
+date = st.date_input("출석 날짜", datetime.date.today())
+date_str = date.strftime("%Y-%m-%d")
+weekday = date.weekday()
+
+# 날짜가 바뀌면 임시 출석 기록 초기화
+selected_date = st.session_state.get("selected_date", None)
+if selected_date != date_str:
     st.session_state.temp_attendance = pd.DataFrame(columns=["날짜", "차시", "이름", "상태", "사유"])
-    st.session_state.final_attendance = pd.DataFrame(columns=["날짜", "차시", "이름", "상태", "사유"])
-    st.session_state.last_date = today
+    st.session_state.selected_date = date_str
 
 date = st.date_input("출석 날짜", today)
 date_str = date.strftime("%Y-%m-%d")
