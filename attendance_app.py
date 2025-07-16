@@ -22,7 +22,7 @@ regular_absents = {
     "한유진": {"pattern": "once", "days": [0, 3, 5]},
 }
 
-st.title("📝 출석부 (1,2차시 분리 + 정기 결석 반영 + 학생별 기록)")
+st.title("📝 출석부 ")
 
 # 자동 초기화
 today = datetime.date.today()
@@ -157,7 +157,7 @@ if st.button("✅ 최종 출석 기록 저장"):
         st.success("🎉 최종 출석 기록이 저장되었습니다.")
 
 # 최종 기록 보기
-st.subheader("📊 최종 출석 기록 (학생별 1줄 보기)")
+st.subheader("📊 최종 출석 기록 ")
 
 if "final_attendance" not in st.session_state or st.session_state.final_attendance.empty:
     st.info("최종 저장된 출석 기록이 없습니다.")
