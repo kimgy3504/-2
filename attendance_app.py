@@ -2,22 +2,17 @@ import streamlit as st
 import pandas as pd
 import datetime
 
-# 학생 목록
 students = ["홍길동", "김철수", "이영희"]
+periods = ["1차시", "2차시"]
 
-# 정기 결석 패턴 설정
-# pattern: "once" = 매주 1번, "twice" = 매주 2번
-# days: 요일 리스트 (0=월요일, 6=일요일)
+# 정기 결석 패턴 (예)
 regular_absents = {
     "이영희": {"pattern": "once", "days": [2]},       # 매주 수요일 1,2차시 모두 결석
     "김철수": {"pattern": "twice", "days": [1, 3]},  # 매주 화,목 2차시만 결석
 }
 
-periods = ["1차시", "2차시"]
+st.title("📝 출석부 (한 줄에 이름 + 1,2차시 체크)")
 
-st.title("📝 출석부 (1,2차시 분리 + 정기 결석 패턴 반영)")
-
-# 자동 초기화 (하루 한번 초기화)
 today = datetime.date.today()
 last_date = st.session_state.get("last_date", None)
 if last_date != today:
@@ -31,57 +26,60 @@ weekday = date.weekday()
 
 st.subheader("📋 출석 체크 (결석자만 체크)")
 
-absent_students_period = {period: [] for period in periods}
-reasons_period = {period: {} for period in periods}
+# 임시 저장용 데이터
+absent_students = {name: {period: False for period in periods} for name in students}
+reasons = {name: {period: "" for period in periods} for name in students}
 
-for period in periods:
-    st.markdown(f"### ▶ {period} 출석 체크")
-    for name in students:
-        absent_auto = False
-        reason = ""
+# UI - 학생별 한 줄에 1,2차시 체크박스와 사유 입력란
+for name in students:
+    cols = st.columns([1, 1, 3, 3])  # 이름, 1차시 체크, 2차시 체크, 사유(묶어서)
+    with cols[0]:
+        st.write(f"**{name}**")
+    for i, period in enumerate(periods):
+        # 자동 결석 여부 확인
+        auto_absent = False
+        auto_reason = ""
         if name in regular_absents:
             info = regular_absents[name]
-            if info["pattern"] == "once":
-                # 매주 1번: 해당 요일이면 1,2차시 모두 결석
-                if weekday in info["days"]:
-                    absent_auto = True
-                    reason = "정기 결석일 (1,2차시 모두 결석)"
-            elif info["pattern"] == "twice":
-                # 매주 2번: 해당 요일이고 2차시일 때만 결석
-                if weekday in info["days"] and period == "2차시":
-                    absent_auto = True
-                    reason = "정기 결석일 (2차시 결석)"
-        if absent_auto:
-            st.markdown(f"❗ **{name}**: {reason} (자동 결석 처리)")
-            absent_students_period[period].append(name)
-            reasons_period[period][name] = reason
+            if info["pattern"] == "once" and weekday in info["days"]:
+                auto_absent = True
+                auto_reason = "정기 결석 (1,2차시 모두 결석)"
+            elif info["pattern"] == "twice" and weekday in info["days"] and period == "2차시":
+                auto_absent = True
+                auto_reason = "정기 결석 (2차시 결석)"
+
+        key_checkbox = f"{name}_absent_{period}"
+        if auto_absent:
+            st.checkbox(f"{period} 결석", key=key_checkbox, value=True, disabled=True)
+            absent_students[name][period] = True
+            reasons[name][period] = auto_reason
+            with cols[3]:
+                st.text(auto_reason)
         else:
-            absent = st.checkbox(f"{name} 결석 ({period})", key=f"{name}_absent_{period}")
-            if absent:
-                absent_students_period[period].append(name)
-                reasons_period[period][name] = st.text_input(f"{name} 결석 사유 ({period})", key=f"{name}_reason_{period}")
+            with cols[i+1]:
+                absent = st.checkbox(f"{period} 결석", key=key_checkbox)
+                absent_students[name][period] = absent
+            with cols[3]:
+                if absent_students[name][period]:
+                    reason = st.text_input(f"{name} {period} 결석 사유", key=f"{name}_reason_{period}")
+                    reasons[name][period] = reason
+                else:
+                    reasons[name][period] = ""
 
 if st.button("💾 임시 출석 기록 저장"):
     if "temp_attendance" not in st.session_state:
         st.session_state.temp_attendance = pd.DataFrame(columns=["날짜", "차시", "이름", "상태", "사유"])
 
-    # 기존 데이터 삭제
-    for period in periods:
-        st.session_state.temp_attendance = st.session_state.temp_attendance[
-            ~((st.session_state.temp_attendance["날짜"] == date_str) &
-              (st.session_state.temp_attendance["차시"] == period) &
-              (st.session_state.temp_attendance["이름"].isin(students)))
-        ]
+    # 기존 데이터 삭제 (해당 날짜)
+    st.session_state.temp_attendance = st.session_state.temp_attendance[
+        st.session_state.temp_attendance["날짜"] != date_str
+    ]
 
     # 새 데이터 추가
-    for period in periods:
-        for name in students:
-            if name in absent_students_period[period]:
-                status = "결석"
-                reason = reasons_period[period].get(name, "")
-            else:
-                status = "출석"
-                reason = ""
+    for name in students:
+        for period in periods:
+            status = "결석" if absent_students[name][period] else "출석"
+            reason = reasons[name][period] if absent_students[name][period] else ""
             st.session_state.temp_attendance.loc[len(st.session_state.temp_attendance)] = [date_str, period, name, status, reason]
 
     st.success("임시 출석 기록이 저장되었습니다.")
