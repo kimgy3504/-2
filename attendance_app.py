@@ -7,22 +7,18 @@ students = ["강정원", "고민서", "권지연", "김가령", "김나형", "�
 periods = ["1차시", "2차시"]
 
 # 정기 결석 설정
-regular_absents = {
-    "강정원": {"pattern": "once", "days": [2]},       # 매주 수요일 전체 결석
-    "고민서": {"pattern": "twice", "days": [1, 3]},   # 매주 화, 목 2차시만 결석
-    "권지연": {"pattern": "once", "days": [2]}
-    "김가령": {"pattern": "once", "days": [2]}
-    "김나형": {"pattern": "once", "days": [2]}
-    "김예르미": {"pattern": "once", "days": [2]}
-    "박수빈": {"pattern": "once", "days": [2]}
-    "송가은": {"pattern": "once", "days": [2]}
-    "이려흔": {"pattern": "once", "days": [2]}
-    "이수아": {"pattern": "once", "days": [2]}
-    "정지윤": {"pattern": "once", "days": [2]}
-    "지혜원": {"pattern": "once", "days": [2]}
-    "최수민": {"pattern": "once", "days": [2]}
-    "하다빈": {"pattern": "once", "days": [2]}
-    "한유진": {"pattern": "once", "days": [2]}
+regular_absents = 
+    "고민서": {"pattern": "once", "days": [1]},   # 매주 화, 목 2차시만 결석
+    "권지연": {"pattern": "twice", "days": [0, 4]},
+    "김가령": {"pattern": "once", "days": [4]},
+    "김나형": {"pattern": "twice", "days": [0, 2]},
+    "김예르미": {"pattern": "once", "days": [4]},
+    "이려흔": {"pattern": "once", "days": [2]},
+    "이수아": {"pattern": "once", "days": [2]},
+    "정지윤": {"pattern": "once", "days": [2]},
+    "최수민": {"pattern": "once", "days": [2]},
+    "하다빈": {"pattern": "once", "days": [2]},
+    "한유진": {"pattern": "once", "days": [2]},
 }
 
 st.title("📝 출석부 (1,2차시 분리 + 정기 결석 반영 + 학생별 기록)")
