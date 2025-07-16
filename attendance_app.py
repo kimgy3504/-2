@@ -71,17 +71,16 @@ for period in periods:
 if st.button("💾 임시 출석 기록 저장"):
     if "temp_attendance" not in st.session_state:
         st.session_state.temp_attendance = pd.DataFrame(columns=["날짜", "차시", "이름", "상태", "사유"])
-
-    # 현재 임시 저장된 기록 불러오기
-    df = st.session_state.temp_attendance.copy()
-
-    # 기존 해당 날짜+차시+이름 제거
+    
+    # 기존 해당 날짜+차시 제거
     for period in periods:
-        for name in students:
-            df = df[~((df["날짜"] == date_str) & (df["차시"] == period) & (df["이름"] == name))]
-
-    # 새 데이터 반영
-    new_rows = []
+        st.session_state.temp_attendance = st.session_state.temp_attendance[
+            ~((st.session_state.temp_attendance["날짜"] == date_str) &
+              (st.session_state.temp_attendance["차시"] == period) &
+              (st.session_state.temp_attendance["이름"].isin(students)))
+        ]
+    
+    # 새 데이터 추가
     for period in periods:
         for name in students:
             if name in absent_students_period[period]:
@@ -90,18 +89,62 @@ if st.button("💾 임시 출석 기록 저장"):
             else:
                 status = "출석"
                 reason = ""
-            new_rows.append({
-                "날짜": date_str,
-                "차시": period,
-                "이름": name,
-                "상태": status,
-                "사유": reason,
-            })
-
-    # 병합 및 저장
-    st.session_state.temp_attendance = pd.concat([df, pd.DataFrame(new_rows)], ignore_index=True)
+            st.session_state.temp_attendance.loc[len(st.session_state.temp_attendance)] = [
+                date_str, period, name, status, reason
+            ]
     st.success("✅ 임시 출석 기록이 저장되었습니다.")
 
+# 함수: 학생별 1줄로 피벗하기
+def pivot_attendance(df):
+    if df.empty:
+        return df
+    pivoted = df.pivot_table(
+        index=["날짜", "이름"],
+        columns="차시",
+        values=["상태", "사유"],
+        aggfunc='first',
+        fill_value=""
+    )
+    pivoted.columns = [f"{col2} {col1}" for col1, col2 in pivoted.columns]
+    pivoted = pivoted.reset_index()
+    pivoted = pivoted.sort_values(by=["날짜", "이름"]).reset_index(drop=True)
+    return pivoted
+
+# 임시 기록 수정
+st.subheader("📝 임시 출석 기록 수정 (학생별 1줄 보기)")
+
+if "temp_attendance" not in st.session_state or st.session_state.temp_attendance.empty:
+    st.info("임시 저장된 출석 기록이 없습니다.")
+else:
+    pivot_temp = pivot_attendance(st.session_state.temp_attendance)
+    edited_temp = st.data_editor(pivot_temp, num_rows="dynamic", key="temp_editor")
+
+    # 되돌리기
+    rows = []
+    for _, row in edited_temp.iterrows():
+        for period in periods:
+            상태 = row.get(f"{period} 상태", "")
+            사유 = row.get(f"{period} 사유", "")
+            rows.append({
+                "날짜": row["날짜"],
+                "이름": row["이름"],
+                "차시": period,
+                "상태": 상태,
+                "사유": 사유,
+            })
+    st.session_state.temp_attendance = pd.DataFrame(rows)
+    if not st.session_state.final_attendance.empty:
+    st.subheader("📈 출석 요약 정보")
+    summary = (
+        st.session_state.final_attendance
+        .groupby(["날짜", "차시", "상태"])
+        .size()
+        .unstack(fill_value=0)
+        .reset_index()
+    )
+    summary = summary.rename(columns={"출석": "출석자 수", "결석": "결석자 수"}).fillna(0)
+    st.dataframe(summary)
+    
 # 최종 저장 버튼
 if st.button("✅ 최종 출석 기록 저장"):
     if "temp_attendance" not in st.session_state or st.session_state.temp_attendance.empty:
@@ -146,14 +189,3 @@ else:
                 "사유": 사유,
             })
     st.session_state.final_attendance = pd.DataFrame(rows)
-if not st.session_state.final_attendance.empty:
-    st.subheader("📈 출석 요약 정보")
-    summary = (
-        st.session_state.final_attendance
-        .groupby(["날짜", "차시", "상태"])
-        .size()
-        .unstack(fill_value=0)
-        .reset_index()
-    )
-    summary = summary.rename(columns={"출석": "출석자 수", "결석": "결석자 수"}).fillna(0)
-    st.dataframe(summary)
