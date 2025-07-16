@@ -178,3 +178,19 @@ else:
                 "사유": 사유,
             })
     st.session_state.final_attendance = pd.DataFrame(rows)
+# ✅ 출석 요약 정보 표시
+if not st.session_state.final_attendance.empty:
+    st.subheader("📈 출석 요약 정보")
+
+    summary = (
+        st.session_state.final_attendance
+        .groupby(["날짜", "차시", "상태"])
+        .size()
+        .unstack(fill_value=0)
+        .reset_index()
+    )
+
+    # 보기 좋게 정리
+    summary = summary.rename(columns={"출석": "출석자 수", "결석": "결석자 수"}).fillna(0)
+    st.dataframe(summary)
+
