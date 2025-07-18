@@ -75,7 +75,7 @@ if st.button("💾 임시 출석 기록 저장"):
     
     # 기존 해당 날짜+차시 제거
     for period in periods:
-    if "temp_attendance" in st.session_state:
+        if "temp_attendance" in st.session_state:
         df = st.session_state.temp_attendance
         condition = (
             (df["날짜"] == date_str) &
