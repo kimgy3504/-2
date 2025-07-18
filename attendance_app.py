@@ -76,17 +76,17 @@ if st.button("💾 임시 출석 기록 저장"):
    # periods는 ["1차시", "2차시"] 등으로 설정되어 있어야 함
     for period in periods: 
         if "temp_attendance" in st.session_state:
-        df = st.session_state.temp_attendance
+         df = st.session_state.temp_attendance
 
         # 삭제할 조건 정의
-        condition = (
+         condition = (
             (df["날짜"] == date_str) &
             (df["차시"] == period) &
             (df["이름"].isin(students))
         )
 
         # 해당 조건을 제외한 데이터로 갱신
-        st.session_state.temp_attendance = df[~condition]
+         st.session_state.temp_attendance = df[~condition]
 
     # 새 데이터 추가
     for period in periods:
