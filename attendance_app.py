@@ -34,15 +34,17 @@ if "reasons" not in st.session_state:
 for period in periods:
     for name in students:
         key = f"{date_str}_{period}_{name}"
-        st.session_state.check_states[key] = False
-        st.session_state.reasons[key] = ""
+        if key not in st.session_state.check_states:
+            st.session_state.check_states[key] = False
+        if key not in st.session_state.reasons:
+            st.session_state.reasons[key] = ""
 
 # 정기 결석 자동 반영
 regular_checked = set()
 for name, rules in regular_absents.items():
-    for period, days in rules:
+    for period_rule, days in rules:
         if weekday_kor in days:
-            key = f"{date_str}_{period}_{name}"
+            key = f"{date_str}_{period_rule}_{name}"
             st.session_state.check_states[key] = True
             st.session_state.reasons[key] = "정기결석"
             regular_checked.add(key)
@@ -114,7 +116,7 @@ if st.button("💾 임시 출석 기록"):
         pd.DataFrame(new_data)
     ], ignore_index=True)
 
-# 📈 출석 요약 정보 (임시 저장 위에 표시)
+# 📈 차시별 출석 요약 정보
 if not st.session_state.temp_attendance.empty:
     df = st.session_state.temp_attendance
     today_df = df[df["날짜"] == date_str]
@@ -155,29 +157,14 @@ if not st.session_state.temp_attendance.empty:
             "출석자 수": len(present_names),
             "정기 결석자 수": len(regular_absent_names),
             "실제 출석자 수": actual_present,
-            "결석자 수": len(absent_names_all),
+            "결석자 수": len(absent_names),
             "결석자 명단": ", ".join(sorted(absent_names)) if absent_names else "",
             "출석률": f"{attendance_rate:.0f}%"
         })
 
-    st.subheader("📈 차시별 출석 요약 정보")
-    # 차시별 메트릭을 가로로 정렬하기 위해 columns 사용
-    for item in summary_data:
-        st.markdown(f"▶ **{item['차시']}**")
-        cols = st.columns(7)
-        cols[0].metric("총 학생 수", item["총 학생 수"])
-        cols[1].metric("출석자 수", item["출석자 수"])
-        cols[2].metric("정기 결석자 수", item["정기 결석자 수"])
-        cols[3].metric("실제 출석자 수", item["실제 출석자 수"])
-        cols[4].metric("결석자 수", item["결석자 수"])
-        cols[5].write("결석자 명단")
-        cols[6].write(item["결석자 명단"])
-
-    # ▶ 차시별 출석 요약 테이블
-    st.markdown("#### 📊 차시별 출석 요약 테이블")
-
+    st.subheader("📈 차시별 출석 요약 정보 (가로 보기)")
     summary_df = pd.DataFrame(summary_data)
-    st.dataframe(summary_df, hide_index=True, use_container_width=True)
+    st.dataframe(summary_df, use_container_width=True)
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
@@ -193,6 +180,10 @@ if not st.session_state.temp_attendance.empty:
             if status == "결석":
                 display_df.loc[row, col] = f"❌ {reason}"
             elif status == "출석":
+                display_df.loc[row, col] = "✅"
+    st.subheader("📄 임시 출석 기록")
+    st.dataframe(display_df, use_container_width=True)
+
                 display_df.loc[row, col] = "✅"
     st.subheader("📄 임시 출석 기록")
     st.dataframe(display_df, use_container_width=True)
