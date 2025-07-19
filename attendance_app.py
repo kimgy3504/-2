@@ -135,8 +135,8 @@ if not st.session_state.temp_attendance.empty:
     # ▶ 차시별 출석 요약 테이블
     st.markdown("#### 📊 차시별 출석 요약")
 
-    summary_data = []
-    for period in periods:
+summary_data = []
+for period in periods:
         period_df = today_df[today_df["차시"] == period]
         total = len(students)
 
