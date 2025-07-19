@@ -147,8 +147,7 @@ present_names = set(period_df[period_df["상태"] == "출석"]["이름"])
 actual_present_names = present_names - regular_absent_names
 actual_present = len(actual_present_names)
 
-
-        attendance_rate = (
+attendance_rate = (
             (actual_present / (total - regular_absent_count) * 100)
             if (total - regular_absent_count) > 0 else 0
         )
