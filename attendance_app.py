@@ -132,7 +132,19 @@ if not st.session_state.temp_attendance.empty:
     st.metric("총 출석 건수", f"{total_records}건")
     st.metric("출석자 수", f"{present}건")
     st.metric("결석자 수", f"{absent}건")
+    # ▶ 차시별 출석 요약 테이블
+    st.markdown("#### 📊 차시별 출석 요약")
 
+    summary_data = []
+    for period in periods:
+        period_df = today_df[today_df["차시"] == period]
+        total = len(students)
+        present = len(period_df[period_df["상태"] == "출석"])
+        absent = len(period_df[period_df["상태"] == "결석"])
+        summary_data.append({"차시": period, "출석자 수": present, "결석자 수": absent, "출석률": f"{(present/total)*100:.0f}%"})
+
+    summary_df = pd.DataFrame(summary_data)
+    st.dataframe(summary_df, hide_index=True, use_container_width=True)
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
