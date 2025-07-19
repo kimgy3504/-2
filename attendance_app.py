@@ -141,7 +141,7 @@ if not st.session_state.temp_attendance.empty:
         present_names = set(period_df[period_df["상태"] == "출석"]["이름"])
 
         # 실제 출석자 = 출석자 - 정기 결석자
-        actual_present_names = present_names - regular_absent_names
+        actual_present_names = present_names - len(regular_absent_names)
         actual_present = len(actual_present_names)
 
         # 결석자 집합 (상태가 결석인 학생들 이름)
