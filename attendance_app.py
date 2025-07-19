@@ -12,48 +12,44 @@ regular_absents = {
     "4.김가령": [("5차시", ["금"])]      # 매주 금요일 5차시 결석
 }
 
-# 오늘 날짜 선택
-selected_date = st.date_input("출석 날짜 선택", value=datetime.date.today())
-date_str = selected_date.strftime("%Y-%m-%d")
-weekday_str = selected_date.strftime("%a")  # 요일 (Mon, Tue,...)
-weekday_kor = {
-    "Mon": "월", "Tue": "화", "Wed": "수",
-    "Thu": "목", "Fri": "금", "Sat": "토", "Sun": "일"
-}[weekday_str]
-
-# 출석 체크 초기화
-if "check_states" not in st.session_state:
+# 날짜가 바뀌면 체크 상태 초기화 (새 출석 입력용 초기화)
+if "last_selected_date" not in st.session_state or st.session_state.last_selected_date != date_str:
     st.session_state.check_states = {}
-
-if "reasons" not in st.session_state:
     st.session_state.reasons = {}
-
-# 이전 날짜 저장용
-if "last_date" not in st.session_state:
-    st.session_state.last_date = None
-
-# --- 날짜가 바뀌면 체크 상태 초기화 및 정기 결석 자동 반영 ---
-if "last_date" not in st.session_state:
-    st.session_state.last_date = None
-
-if st.session_state.last_date != date_str:
-    # 상태 초기화
     for period in periods:
         for name in students:
             key = f"{date_str}_{period}_{name}"
             st.session_state.check_states[key] = False
             st.session_state.reasons[key] = ""
-    # 정기 결석 자동 반영
-    for name, rules in regular_absents.items():
-        for period, days in rules:
-            if weekday_kor in days:
-                key = f"{date_str}_{period}_{name}"
-                st.session_state.check_states[key] = True
-                st.session_state.reasons[key] = "정기결석"
+    st.session_state.last_selected_date = date_str
 
-    st.session_state.last_date = date_str
+# 정기 결석 자동 반영
+regular_checked = set()
+for name, rules in regular_absents.items():
+    for period_rule, days in rules:
+        if weekday_kor in days:
+            key = f"{date_str}_{period_rule}_{name}"
+            st.session_state.check_states[key] = True
+            st.session_state.reasons[key] = "정기결석"
+            regular_checked.add(key)
 
+# --- 여기까지가 새 출석 체크 화면 초기화 및 기본값 설정
 
+# 임시 출석 기록 수정용: 기존 임시 데이터가 있으면, 임시 수정 화면에서는
+# check_states, reasons에 임시 기록을 불러와서 보여주고, 수정을 진행
+
+if "temp_attendance" in st.session_state and not st.session_state.temp_attendance.empty:
+    temp_df = st.session_state.temp_attendance
+    # 예) 수정 화면에서만 사용, 필요하면 데이터 프레임 변환 후 표시
+
+# 임시 출석 기록 저장 버튼 (출석 체크 화면에서 새 입력시)
+if st.button("💾 임시 출석 기록 저장"):
+    # 기존 날짜 데이터 삭제 후,
+    # 현재 체크박스 상태를 temp_attendance에 저장 (덮어쓰기)
+    # 이후 체크 상태를 다시 초기화하거나 유지 여부 결정
+
+# 임시 출석 기록 수정 화면에서는
+# 임시 저장된 출석 데이터를 보여주고 수정 후 다시 temp_attendance에 반영
 
 # 체크박스 테이블
 for period in periods:
