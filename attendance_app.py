@@ -12,6 +12,10 @@ regular_absents = {
     "4.김가령": [("5차시", ["금"])]      # 매주 금요일 5차시 결석
 }
 
+# 오늘 날짜 선택
+selected_date = st.date_input("출석 날짜 선택", value=datetime.date.today())
+date_str = selected_date.strftime("%Y-%m-%d")
+
 # 날짜가 바뀌면 체크 상태 초기화 (새 출석 입력용 초기화)
 if "last_selected_date" not in st.session_state or st.session_state.last_selected_date != date_str:
     st.session_state.check_states = {}
