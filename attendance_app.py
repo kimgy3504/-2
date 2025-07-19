@@ -174,7 +174,7 @@ if not st.session_state.temp_attendance.empty:
     reason_pivot = today_df.pivot(index="이름", columns="차시", values="사유").fillna("")
     display_df = pivot.copy()
     for row in display_df.index:
-    for col in display_df.columns:
+        for col in display_df.columns:
         status = display_df.loc[row, col]
         reason = reason_pivot.loc[row, col]
         if status == "결석":
