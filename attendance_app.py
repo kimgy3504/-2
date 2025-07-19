@@ -146,4 +146,4 @@ if not st.session_state.temp_attendance.empty:
             elif status == "출석":
                 display_df.loc[row, col] = "✅"
     st.subheader("📄 임시 출석 기록")
-    st.dataframe(display_df, use_container_width=True) 여기에서 내가 수정을 원한 부분만 수정해주면 안될까 
+    st.dataframe(display_df, use_container_width=True)  
