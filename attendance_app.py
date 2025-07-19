@@ -52,16 +52,16 @@ if st.button("💾 임시 출석 기록 저장"):
 # 임시 저장된 출석 데이터를 보여주고 수정 후 다시 temp_attendance에 반영
 
 # 체크박스 테이블
-for period in periods:
-    st.markdown(f"### {period}")
-    cols = st.columns(len(students))
-    for i, name in enumerate(students):
-        key = f"{date_str}_{period}_{name}"
-        with cols[i]:
-            st.session_state.check_states[key] = st.checkbox(
-                name,
-                value=st.session_state.check_states.get(key, False),
-                key=key
+    for period in periods:
+        st.markdown(f"### {period}")
+        cols = st.columns(len(students))
+        for i, name in enumerate(students):
+            key = f"{date_str}_{period}_{name}"
+            with cols[i]:
+                st.session_state.check_states[key] = st.checkbox(
+                    name,
+                    value=st.session_state.check_states.get(key, False),
+                    key=key
             )
             if st.session_state.check_states[key]:
                 st.session_state.reasons[key] = st.text_input(
