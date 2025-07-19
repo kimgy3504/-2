@@ -32,7 +32,10 @@ if "reasons" not in st.session_state:
 if "last_date" not in st.session_state:
     st.session_state.last_date = None
 
-# 날짜가 바뀌면 초기화 및 정기 결석 반영
+# --- 날짜가 바뀌면 체크 상태 초기화 및 정기 결석 자동 반영 ---
+if "last_date" not in st.session_state:
+    st.session_state.last_date = None
+
 if st.session_state.last_date != date_str:
     # 상태 초기화
     for period in periods:
@@ -50,17 +53,7 @@ if st.session_state.last_date != date_str:
 
     st.session_state.last_date = date_str
 
-# 정기 결석 자동 반영
-regular_checked = set()
-for name, rules in regular_absents.items():
-    for period_rule, days in rules:
-        if weekday_kor in days:
-            key = f"{date_str}_{period_rule}_{name}"
-            st.session_state.check_states[key] = True
-            st.session_state.reasons[key] = "정기결석"
-            regular_checked.add(key)
 
-st.subheader("📋 출석 체크 (결석자만 체크)")
 
 # 체크박스 테이블
 for period in periods:
