@@ -5,13 +5,11 @@ import datetime
 st.set_page_config(page_title="출석부", layout="wide")
 
 # 초기 설정
-students = ["김가령", "이지은", "박서준", "최수빈", "정우성"]
+students = ["1.강정원", "2.고민서", "3.권지연", "4.김가령", "7.김예르미", "8.박수빈", "9.송가은", "10.이려흔", "12.임보배", "13.임지예", "15.정지윤", "16.지혜원", "17.최수민", "18.하다빈", "19.한유진"]
 periods = ["1차시", "2차시", "3차시", "4차시", "5차시"]
 status_options = ["출석", "결석", "지각", "조퇴"]
 regular_absents = {
-    "김가령": [("2차시", ["월", "수"])],       # 매주 월, 수요일 2차시 결석
-    "이지은": [("1차시", ["금"]), ("2차시", ["금"])], # 매주 금요일 1,2차시 결석
-    "정우성": [("1차시", ["화", "수", "목"])],  # 매주 3일 결석
+    "김가령": [("5차시", ["금"])],       # 매주 금요일 5차시 결석
 }
 
 # 오늘 날짜 선택
@@ -153,12 +151,12 @@ if not st.session_state.temp_attendance.empty:
 
         summary_data.append({
             "차시": period,
-            "총 학생 수": total,
-            "출석자 수": len(present_names),
+            "참여 하는 인원": total,
+            "총원": len(present_names),
             "정기 결석자 수": len(regular_absent_names),
-            "실제 출석자 수": actual_present,
-            "결석자 수": len(absent_names),
-            "결석자 명단": ", ".join(sorted(absent_names)) if absent_names else "",
+            "현원": actual_present,
+            "결원": len(absent_names),
+            "결석자 번호,이름": ", ".join(sorted(absent_names)) if absent_names else "",
             "출석률": f"{attendance_rate:.0f}%"
         })
 
