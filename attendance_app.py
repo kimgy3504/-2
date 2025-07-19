@@ -88,7 +88,7 @@ for period in periods:
 attendance_df = load_data()
 
 # 임시 저장 버튼
-if st.button("💾 임시 출석 기록 저장"):
+if st.button("💾 출석 기록 저장(체크 표시하고 꼭 눌러야 저장 됨!)"):
     # 기존 데이터 중 같은 날짜+학생+차시 삭제
     for period in periods:
         attendance_df = attendance_df[~(
@@ -118,7 +118,7 @@ if st.button("💾 임시 출석 기록 저장"):
 
     attendance_df = pd.concat([attendance_df, pd.DataFrame(new_records)], ignore_index=True)
     save_data(attendance_df)
-    st.success("임시 출석 기록이 저장되었습니다!")
+    st.success("출석 기록이 저장되었습니다!")
 
 # 차시별 출석 요약
 if not attendance_df.empty:
@@ -147,15 +147,15 @@ if not attendance_df.empty:
         summary.append({
             "차시": period,
             "총원": total - len(regular_absent_names),
-            "출석자 수": len(present_names),
-            "정기 결석자 수": len(regular_absent_names),
-            "결석자 명단": ", ".join(sorted(absent_names_only)) if absent_names_only else "-",
-            "결석자 수": len(absent_names_only),
-            "실제 출석자 수": actual_present,
+            "현원": len(present_names),
+            "정기 결석": len(regular_absent_names),
+            "결원 번호,이름": ", ".join(sorted(absent_names_only)) if absent_names_only else "-",
+            "결원": len(absent_names_only),
+            "--": actual_present,
             "출석률": f"{attendance_rate:.0f}%"
         })
 
-    st.subheader("📈 차시별 출석 요약 정보")
+    st.subheader("📈 자습 인원(칠판에 적을 내용)")
     st.dataframe(pd.DataFrame(summary).set_index("차시"), use_container_width=True)
 
 # 출석 기록 테이블
@@ -172,5 +172,5 @@ if not attendance_df.empty:
                 display_df.loc[r, c] = f"❌ {reason}"
             elif status == "출석":
                 display_df.loc[r, c] = "✅"
-    st.subheader("📄 임시 출석 기록")
+    st.subheader("📄 개인별 자습 기록")
     st.dataframe(display_df, use_container_width=True)
