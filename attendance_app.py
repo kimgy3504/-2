@@ -139,9 +139,11 @@ if not st.session_state.temp_attendance.empty:
 
         total = len(students) - regular_absent_count  # 총원 = 학생수 - 정기 결석자 수
 
+        # 결석자 중 정기 결석자는 제외
+        absent = len(period_df[(period_df["상태"] == "결석") & (~period_df["이름"].isin(regular_absent_keys))])
+
         present = len(period_df[period_df["상태"] == "출석"])
-        absent = len(period_df[period_df["상태"] == "결석"])
-        actual_present = present  # 실제 출석자 = 출석자 수 (정기 결석자는 결석에 포함 안 시켰으니 그대로)
+        actual_present = present  # 실제 출석자 = 출석자 수 그대로
 
         attendance_rate = (
             f"{(actual_present / total * 100):.0f}%" if total > 0 else "0%"
@@ -150,16 +152,12 @@ if not st.session_state.temp_attendance.empty:
         summary_data.append({
             "차시": period,
             "총원": total,
-            "현원": present,
+            "출석자 수": present,
             "결석자 수": absent,
             "정기 결석자 수": regular_absent_count,
             "실제 출석자 수": actual_present,
             "출석률": attendance_rate
         })
-
-    st.subheader("📈 차시별 출석 요약 정보 (총원 = 학생수 - 정기 결석자)")
-    st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
-
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
