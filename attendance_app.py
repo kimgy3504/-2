@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import datetime
@@ -9,34 +8,38 @@ st.set_page_config(page_title="출석부", layout="wide")
 students = ["김가령", "이지은", "박서준", "최수빈", "정우성"]
 periods = ["1차시", "2차시", "3차시", "4차시", "5차시"]
 status_options = ["출석", "결석", "지각", "조퇴"]
+
+# 정기 결석 예시 (학생명: [(차시, [요일 목록])] )
 regular_absents = {
-    "김가령": [("2차시", ["월", "수"])],       # 매주 월, 수요일 2차시 결석
+    "김가령": [("2차시", ["월", "수"])],         # 매주 월, 수요일 2차시 결석
     "이지은": [("1차시", ["금"]), ("2차시", ["금"])], # 매주 금요일 1,2차시 결석
-    "정우성": [("1차시", ["화", "수", "목"])],  # 매주 3일 결석
+    "정우성": [("1차시", ["화", "수", "목"])],    # 매주 화, 수, 목 1차시 결석
 }
 
 # 오늘 날짜 선택
 selected_date = st.date_input("출석 날짜 선택", value=datetime.date.today())
 date_str = selected_date.strftime("%Y-%m-%d")
-weekday_str = selected_date.strftime("%a")  # 요일 (Mon, Tue,...)
+weekday_str = selected_date.strftime("%a")  # 요일 영어 약어 (Mon, Tue, ...)
 weekday_kor = {
     "Mon": "월", "Tue": "화", "Wed": "수",
     "Thu": "목", "Fri": "금", "Sat": "토", "Sun": "일"
 }[weekday_str]
 
-# 출석 체크 초기화
+# 출석 체크 초기화 (날짜 바뀌면 초기화됨)
 if "check_states" not in st.session_state:
     st.session_state.check_states = {}
 
 if "reasons" not in st.session_state:
     st.session_state.reasons = {}
 
-# 날짜가 바뀌면 체크 상태 초기화
 for period in periods:
     for name in students:
         key = f"{date_str}_{period}_{name}"
-        st.session_state.check_states[key] = False
-        st.session_state.reasons[key] = ""
+        # 날짜 바뀌면 상태 초기화
+        if key not in st.session_state.check_states:
+            st.session_state.check_states[key] = False
+        if key not in st.session_state.reasons:
+            st.session_state.reasons[key] = ""
 
 # 정기 결석 자동 반영
 regular_checked = set()
@@ -71,7 +74,7 @@ for period in periods:
             else:
                 st.session_state.reasons[key] = ""
 
-# 임시 출석 기록 저장
+# 임시 출석 기록 저장 초기화
 if "temp_attendance" not in st.session_state:
     st.session_state.temp_attendance = pd.DataFrame(
         columns=["날짜", "이름", "차시", "상태", "사유"]
@@ -79,12 +82,14 @@ if "temp_attendance" not in st.session_state:
 
 # 출석 저장 버튼
 if st.button("💾 임시 출석 기록"):
-    # 날짜와 학생, 차시에 맞는 기존 데이터 삭제
+    # 기존 해당 날짜+학생+차시 데이터 삭제
     for period in periods:
         st.session_state.temp_attendance = st.session_state.temp_attendance[
-            ~((st.session_state.temp_attendance["날짜"] == date_str) &
-              (st.session_state.temp_attendance["차시"] == period) &
-              (st.session_state.temp_attendance["이름"].isin(students)))
+            ~(
+                (st.session_state.temp_attendance["날짜"] == date_str) &
+                (st.session_state.temp_attendance["차시"] == period) &
+                (st.session_state.temp_attendance["이름"].isin(students))
+            )
         ]
 
     # 새로 체크된 항목 저장
@@ -115,7 +120,7 @@ if st.button("💾 임시 출석 기록"):
         pd.DataFrame(new_data)
     ], ignore_index=True)
 
-# 📈 출석 요약 정보 (임시 저장 위에 표시)
+# 📈 차시별 출석 요약 정보 (임시 저장 위에 표시)
 if not st.session_state.temp_attendance.empty:
     df = st.session_state.temp_attendance
     today_df = df[df["날짜"] == date_str]
@@ -125,48 +130,41 @@ if not st.session_state.temp_attendance.empty:
         period_df = today_df[today_df["차시"] == period]
         total = len(students)
 
-        # 정기 결석자 수 계산
-        regular_absent_keys = set()
+        # 정기 결석자 이름 집합
+        regular_absent_names = set()
         for name, rules in regular_absents.items():
             for p, days in rules:
                 if p == period and weekday_kor in days:
-                    regular_absent_keys.add(name)
-        regular_absent_count = len(regular_absent_keys)
+                    regular_absent_names.add(name)
 
-      # 정기 결석 학생 이름 집합
-regular_absent_names = set()
-for name, rules in regular_absents.items():
-    for p, days in rules:
-        if p == period and weekday_kor in days:
-            regular_absent_names.add(name)
+        # 출석자 이름 집합
+        present_names = set(period_df[period_df["상태"] == "출석"]["이름"])
 
-# 출석자 이름 집합
-present_names = set(period_df[period_df["상태"] == "출석"]["이름"])
+        # 실제 출석자 = 출석자 - 정기 결석자
+        actual_present_names = present_names - regular_absent_names
+        actual_present = len(actual_present_names)
 
-# 실제 출석자 이름은 출석자 중 정기 결석자 제외
-actual_present_names = present_names - regular_absent_names
-actual_present = len(actual_present_names)
+        absent = len(period_df[period_df["상태"] == "결석"])
 
-attendance_rate = (
-            (actual_present / (total - regular_absent_count) * 100)
-            if (total - regular_absent_count) > 0 else 0
+        attendance_rate = (
+            (actual_present / (total - len(regular_absent_names))) * 100
+            if (total - len(regular_absent_names)) > 0 else 0
         )
 
-summary_data.append({
+        summary_data.append({
             "차시": period,
             "총 학생 수": total,
-            "출석자 수": present,
-            "정기 결석자 수": regular_absent_count,
+            "출석자 수": len(present_names),
+            "정기 결석자 수": len(regular_absent_names),
             "실제 출석자 수": actual_present,
             "결석자 수": absent,
-            "출석률(%)": f"{attendance_rate:.1f}"
+            "출석률": f"{attendance_rate:.0f}%"
         })
-summary_df = pd.DataFrame(summary_data)
-summary_df = summary_df.set_index("차시").T  # 전치해서 차시별 컬럼으로 보기 편하게
 
-st.subheader("📈 차시별 출석 요약 정보")
-st.dataframe(summary_df, use_container_width=True)
-
+    st.subheader("📈 차시별 출석 요약 정보")
+    # 가로 형태로 보기 위해 DataFrame 생성 후 출력
+    summary_df = pd.DataFrame(summary_data).set_index("차시")
+    st.dataframe(summary_df, use_container_width=True)
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
@@ -184,4 +182,4 @@ if not st.session_state.temp_attendance.empty:
             elif status == "출석":
                 display_df.loc[row, col] = "✅"
     st.subheader("📄 임시 출석 기록")
-    st.dataframe(display_df, use_container_width=True)  
+    st.dataframe(display_df, use_container_width=True)
