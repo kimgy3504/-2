@@ -130,6 +130,7 @@ if not st.session_state.temp_attendance.empty:
     st.metric("출석자 수", f"{present}명")
     st.metric("결석자 수", f"{absent}명")
 
+
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
     df = st.session_state.temp_attendance
