@@ -120,15 +120,18 @@ if not st.session_state.temp_attendance.empty:
     df = st.session_state.temp_attendance
     today_df = df[df["날짜"] == date_str]
 
-    # 총 출석 대상은 '정기 결석이 아닌 사람'만 계산
-    total = today_df[today_df["사유"] != "정기결석"].shape[0]
-    present = today_df[(today_df["상태"] == "출석") & (today_df["사유"] != "정기결석")].shape[0]
-    absent = today_df[(today_df["상태"] == "결석") & (today_df["사유"] != "정기결석")].shape[0]
+    total_students = len(students)
+    total_periods = len(periods)
+    total_records = total_students * total_periods
+    present = len(today_df[today_df["상태"] == "출석"])
+    absent = len(today_df[today_df["상태"] == "결석"])
 
     st.subheader("📈 출석 요약 정보")
-    st.metric("총 출석 대상", f"{total}명")
-    st.metric("출석자 수", f"{present}명")
-    st.metric("결석자 수", f"{absent}명")
+    st.metric("총 학생 수", f"{total_students}명")
+    st.metric("출석 차시 수", f"{total_periods}차시")
+    st.metric("총 출석 건수", f"{total_records}건")
+    st.metric("출석자 수", f"{present}건")
+    st.metric("결석자 수", f"{absent}건")
 
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
