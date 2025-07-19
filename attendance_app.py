@@ -184,6 +184,3 @@ if not st.session_state.temp_attendance.empty:
     st.subheader("📄 임시 출석 기록")
     st.dataframe(display_df, use_container_width=True)
 
-                display_df.loc[row, col] = "✅"
-    st.subheader("📄 임시 출석 기록")
-    st.dataframe(display_df, use_container_width=True)
