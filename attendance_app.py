@@ -125,8 +125,8 @@ if not st.session_state.temp_attendance.empty:
     df = st.session_state.temp_attendance
     today_df = df[df["날짜"] == date_str]
 
-    summary_data = []
-    for period in periods:
+     summary_data = []
+     for period in periods:
         period_df = today_df[today_df["차시"] == period]
 
         # 정기 결석자 명단
