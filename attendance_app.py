@@ -28,14 +28,27 @@ if "check_states" not in st.session_state:
 if "reasons" not in st.session_state:
     st.session_state.reasons = {}
 
-# 날짜가 바뀌면 체크 상태 초기화
-for period in periods:
-    for name in students:
-        key = f"{date_str}_{period}_{name}"
-        if key not in st.session_state.check_states:
+# 이전 날짜 저장용
+if "last_date" not in st.session_state:
+    st.session_state.last_date = None
+
+# 날짜가 바뀌면 초기화 및 정기 결석 반영
+if st.session_state.last_date != date_str:
+    # 상태 초기화
+    for period in periods:
+        for name in students:
+            key = f"{date_str}_{period}_{name}"
             st.session_state.check_states[key] = False
-        if key not in st.session_state.reasons:
             st.session_state.reasons[key] = ""
+    # 정기 결석 자동 반영
+    for name, rules in regular_absents.items():
+        for period, days in rules:
+            if weekday_kor in days:
+                key = f"{date_str}_{period}_{name}"
+                st.session_state.check_states[key] = True
+                st.session_state.reasons[key] = "정기결석"
+
+    st.session_state.last_date = date_str
 
 # 정기 결석 자동 반영
 regular_checked = set()
