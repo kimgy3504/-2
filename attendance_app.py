@@ -139,7 +139,10 @@ if not st.session_state.temp_attendance.empty:
         actual_present = len(actual_present_names)
 
         # 결석자 집합 (상태가 결석인 학생들 이름)
-        absent_names = set(period_df[period_df["상태"] == "결석"]["이름"])
+        absent_names_all = set(period_df[period_df["상태"] == "결석"]["이름"])
+
+        # 결석자 명단에서 정기 결석자는 제외
+        absent_names = absent_names_all - regular_absent_names
 
         attendance_rate = (
             (actual_present / (total - len(regular_absent_names))) * 100
@@ -152,7 +155,7 @@ if not st.session_state.temp_attendance.empty:
             "출석자 수": len(present_names),
             "정기 결석자 수": len(regular_absent_names),
             "실제 출석자 수": actual_present,
-            "결석자 수": len(absent_names),
+            "결석자 수": len(absent_names_all),
             "결석자 명단": ", ".join(sorted(absent_names)) if absent_names else "",
             "출석률": f"{attendance_rate:.0f}%"
         })
