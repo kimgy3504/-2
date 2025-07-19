@@ -152,7 +152,7 @@ attendance_rate = (
             if (total - regular_absent_count) > 0 else 0
         )
 
-        summary_data.append({
+summary_data.append({
             "차시": period,
             "총 학생 수": total,
             "출석자 수": present,
@@ -161,12 +161,11 @@ attendance_rate = (
             "결석자 수": absent,
             "출석률(%)": f"{attendance_rate:.1f}"
         })
+summary_df = pd.DataFrame(summary_data)
+summary_df = summary_df.set_index("차시").T  # 전치해서 차시별 컬럼으로 보기 편하게
 
-    summary_df = pd.DataFrame(summary_data)
-    summary_df = summary_df.set_index("차시").T  # 전치해서 차시별 컬럼으로 보기 편하게
-
-    st.subheader("📈 차시별 출석 요약 정보")
-    st.dataframe(summary_df, use_container_width=True)
+st.subheader("📈 차시별 출석 요약 정보")
+st.dataframe(summary_df, use_container_width=True)
 
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
