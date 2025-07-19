@@ -125,7 +125,7 @@ if not st.session_state.temp_attendance.empty:
         period_df = today_df[today_df["차시"] == period]
         total = len(students)
 
-        # 정기 결석자 수
+        # 정기 결석자 수 계산
         regular_absent_keys = set()
         for name, rules in regular_absents.items():
             for p, days in rules:
@@ -135,7 +135,14 @@ if not st.session_state.temp_attendance.empty:
 
         present = len(period_df[period_df["상태"] == "출석"])
         absent = len(period_df[period_df["상태"] == "결석"])
-        actual_present = present - (regular_absent_count if regular_absent_count <= present else 0)
+
+        # 실제 출석자 수: 출석자 수에서 정기 결석자 수 빼기 (0 미만 방지)
+        actual_present = max(present - regular_absent_count, 0)
+
+        attendance_rate = (
+            (actual_present / (total - regular_absent_count) * 100)
+            if (total - regular_absent_count) > 0 else 0
+        )
 
         summary_data.append({
             "차시": period,
@@ -144,32 +151,15 @@ if not st.session_state.temp_attendance.empty:
             "정기 결석자 수": regular_absent_count,
             "실제 출석자 수": actual_present,
             "결석자 수": absent,
-            "출석률": f"{(actual_present / (total - regular_absent_count) * 100) if (total - regular_absent_count) > 0 else 0:.0f}%"
+            "출석률(%)": f"{attendance_rate:.1f}"
         })
 
-    st.subheader("📈 차시별 출석 요약 정보")
-    for item in summary_data:
-        st.write(f"▶ {item['차시']}")
-        st.metric("총 학생 수", item["총 학생 수"])
-        st.metric("출석자 수", item["출석자 수"])
-        st.metric("정기 결석자 수", item["정기 결석자 수"])
-        st.metric("실제 출석자 수", item["실제 출석자 수"])
-        st.metric("결석자 수", item["결석자 수"])
-        st.write(f"출석률: {item['출석률']}")
-
-     # ▶ 차시별 출석 요약 테이블
-    st.markdown("#### 📊 차시별 출석 요약")
-
-    summary_data = []
-    for period in periods:
-        period_df = today_df[today_df["차시"] == period]
-        total = len(students)
-        present = len(period_df[period_df["상태"] == "출석"])
-        absent = len(period_df[period_df["상태"] == "결석"])
-        summary_data.append({"차시": period, "출석자 수": present, "결석자 수": absent, "출석률": f"{(present/total)*100:.0f}%"})
-
     summary_df = pd.DataFrame(summary_data)
-    st.dataframe(summary_df, hide_index=True, use_container_width=True)
+    summary_df = summary_df.set_index("차시").T  # 전치해서 차시별 컬럼으로 보기 편하게
+
+    st.subheader("📈 차시별 출석 요약 정보")
+    st.dataframe(summary_df, use_container_width=True)
+)
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
