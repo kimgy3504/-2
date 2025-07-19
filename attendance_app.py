@@ -159,7 +159,7 @@ if not st.session_state.temp_attendance.empty:
 
     st.subheader("📈 차시별 출석 요약 정보")
     st.dataframe(summary_df, use_container_width=True)
-)
+
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
