@@ -167,7 +167,7 @@ if not st.session_state.temp_attendance.empty:
             "출석률": attendance_rate
         })
 
-    st.subheader("📈 차시별 출석 요약 정보 (총원 = 학생수 - 정기 결석자)")
+    st.subheader("📈 차시별 출석부 (칠판에 적을 내용)")
     st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
@@ -185,6 +185,6 @@ if not st.session_state.temp_attendance.empty:
                 display_df.loc[row, col] = f"❌ {reason}"
             elif status == "출석":
                 display_df.loc[row, col] = "✅"
-    st.subheader("📄 임시 출석 기록")
+    st.subheader("📄 개인별 출석기록 ")
     st.dataframe(display_df, use_container_width=True)
 
