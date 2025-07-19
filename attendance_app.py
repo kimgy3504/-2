@@ -120,23 +120,45 @@ if not st.session_state.temp_attendance.empty:
     df = st.session_state.temp_attendance
     today_df = df[df["날짜"] == date_str]
 
-    total_students = len(students)
-    total_periods = len(periods)
-    total_records = total_students * total_periods
-    present = len(today_df[today_df["상태"] == "출석"])
-    absent = len(today_df[today_df["상태"] == "결석"])
+    summary_data = []
+    for period in periods:
+        period_df = today_df[today_df["차시"] == period]
+        total = len(students)
 
-    st.subheader("📈 출석 요약 정보")
-    st.metric("총 학생 수", f"{total_students}명")
-    st.metric("출석 차시 수", f"{total_periods}차시")
-    st.metric("총 출석 건수", f"{total_records}건")
-    st.metric("출석자 수", f"{present}건")
-    st.metric("결석자 수", f"{absent}건")
-    # ▶ 차시별 출석 요약 테이블
-    st.markdown("#### 📊 차시별 출석 요약")
+        # 정기 결석자 수
+        regular_absent_keys = set()
+        for name, rules in regular_absents.items():
+            for p, days in rules:
+                if p == period and weekday_kor in days:
+                    regular_absent_keys.add(name)
+        regular_absent_count = len(regular_absent_keys)
 
-summary_data = []
-for period in periods:
+        present = len(period_df[period_df["상태"] == "출석"])
+        absent = len(period_df[period_df["상태"] == "결석"])
+        actual_present = present - (regular_absent_count if regular_absent_count <= present else 0)
+
+        summary_data.append({
+            "차시": period,
+            "총 학생 수": total,
+            "출석자 수": present,
+            "정기 결석자 수": regular_absent_count,
+            "실제 출석자 수": actual_present,
+            "결석자 수": absent,
+            "출석률": f"{(actual_present / (total - regular_absent_count) * 100) if (total - regular_absent_count) > 0 else 0:.0f}%"
+        })
+
+    st.subheader("📈 차시별 출석 요약 정보")
+    for item in summary_data:
+        st.write(f"▶ {item['차시']}")
+        st.metric("총 학생 수", item["총 학생 수"])
+        st.metric("출석자 수", item["출석자 수"])
+        st.metric("정기 결석자 수", item["정기 결석자 수"])
+        st.metric("실제 출석자 수", item["실제 출석자 수"])
+        st.metric("결석자 수", item["결석자 수"])
+        st.write(f"출석률: {item['출석률']}")
+
+  summary_data = []
+  for period in periods:
         period_df = today_df[today_df["차시"] == period]
         total = len(students)
 
