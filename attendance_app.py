@@ -150,7 +150,7 @@ if not st.session_state.temp_attendance.empty:
         summary_data.append({
             "차시": period,
             "총원": total,
-            "출석자 수": present,
+            "현원": present,
             "결석자 수": absent,
             "정기 결석자 수": regular_absent_count,
             "실제 출석자 수": actual_present,
