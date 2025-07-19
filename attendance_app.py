@@ -133,19 +133,19 @@ if not st.session_state.temp_attendance.empty:
                     regular_absent_keys.add(name)
         regular_absent_count = len(regular_absent_keys)
 
-       # 정기 결석 학생 이름 집합
- regular_absent_names = set()
- for name, rules in regular_absents.items():
+      # 정기 결석 학생 이름 집합
+regular_absent_names = set()
+for name, rules in regular_absents.items():
     for p, days in rules:
         if p == period and weekday_kor in days:
             regular_absent_names.add(name)
 
- # 출석자 이름 집합
- present_names = set(period_df[period_df["상태"] == "출석"]["이름"])
+# 출석자 이름 집합
+present_names = set(period_df[period_df["상태"] == "출석"]["이름"])
 
- # 실제 출석자 이름은 출석자 중 정기 결석자 제외
- actual_present_names = present_names - regular_absent_names
- actual_present = len(actual_present_names)
+# 실제 출석자 이름은 출석자 중 정기 결석자 제외
+actual_present_names = present_names - regular_absent_names
+actual_present = len(actual_present_names)
 
 
         attendance_rate = (
