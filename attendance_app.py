@@ -174,13 +174,13 @@ if not st.session_state.temp_attendance.empty:
     reason_pivot = today_df.pivot(index="이름", columns="차시", values="사유").fillna("")
     display_df = pivot.copy()
     for row in display_df.index:
-        for col in display_df.columns:
-            status = display_df.loc[row, col]
-            reason = reason_pivot.loc[row, col]
-            if status == "결석":
-                display_df.loc[row, col] = f"❌ {reason}"
-            elif status == "출석":
-                display_df.loc[row, col] = "✅"
+    for col in display_df.columns:
+        status = display_df.loc[row, col]
+        reason = reason_pivot.loc[row, col]
+        if status == "결석":
+            display_df.loc[row, col] = f"❌ {reason}"
+        elif status == "출석":
+            display_df.loc[row, col] = "✅"
     st.subheader("📄 임시 출석 기록")
     st.dataframe(display_df, use_container_width=True)
 
