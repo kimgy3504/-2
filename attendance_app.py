@@ -135,16 +135,33 @@ if not st.session_state.temp_attendance.empty:
     # ▶ 차시별 출석 요약 테이블
     st.markdown("#### 📊 차시별 출석 요약")
 
-    summary_data = []
+        summary_data = []
     for period in periods:
         period_df = today_df[today_df["차시"] == period]
         total = len(students)
+
+        # 정기 결석자 수 (자동 결석 처리된 사람)
+        regular_absent_keys = set()
+        for name, rules in regular_absents.items():
+            for p, days in rules:
+                if p == period and weekday_kor in days:
+                    regular_absent_keys.add(name)
+        regular_absent_count = len(regular_absent_keys)
+
         present = len(period_df[period_df["상태"] == "출석"])
         absent = len(period_df[period_df["상태"] == "결석"])
-        summary_data.append({"차시": period, "출석자 수": present, "결석자 수": absent, "출석률": f"{(present/total)*100:.0f}%"})
+        # 실제 출석자 수 = 출석자 수 - 정기 결석자 수 (자동 결석 제외)
+        actual_present = present - (regular_absent_count if regular_absent_count <= present else 0)
 
-    summary_df = pd.DataFrame(summary_data)
-    st.dataframe(summary_df, hide_index=True, use_container_width=True)
+        summary_data.append({
+            "차시": period,
+            "총 학생 수": total,
+            "출석자 수": present,
+            "정기 결석자 수": regular_absent_count,
+            "실제 출석자 수": actual_present,
+            "결석자 수": absent,
+            "출석률": f"{(actual_present / (total - regular_absent_count) * 100) if (total - regular_absent_count) > 0 else 0:.0f}%"
+        })
 
 # 📝 출석 기록 테이블 (가로: 차시, 세로: 이름)
 if not st.session_state.temp_attendance.empty:
