@@ -178,6 +178,5 @@ if not attendance_df.empty:
                 display_df.loc[r, c] = f"❌ {reason}"
             elif status == "출석":
                 display_df.loc[r, c] = "✅"
- # 개인별 자습 기록 출력 (students 기준으로만 출력)
-st.subheader("📝 개인별 자습 기록")
-for student in sorted(students):
+st.subheader("📄 임시 출석 기록")
+    st.dataframe(display_df, use_container_width=True)
