@@ -84,6 +84,8 @@ for period in periods:
 
 # 임시 저장 데이터 로드
 attendance_df = load_data()
+# students에 없는 이름은 제외
+attendance_df = attendance_df[attendance_df["이름"].isin(students)]
 
 # 임시 저장 버튼
 if st.button("💾 출석 기록 저장(체크 표시하고 꼭 눌러야 저장 됨!)"):
@@ -176,5 +178,6 @@ if not attendance_df.empty:
                 display_df.loc[r, c] = f"❌ {reason}"
             elif status == "출석":
                 display_df.loc[r, c] = "✅"
-    st.subheader("📄 개인별 자습 기록")
-    st.dataframe(display_df, use_container_width=True)
+ # 개인별 자습 기록 출력 (students 기준으로만 출력)
+st.subheader("📝 개인별 자습 기록")
+for student in sorted(students):
