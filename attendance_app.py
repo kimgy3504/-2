@@ -150,11 +150,11 @@ if not attendance_df.empty:
 
         summary.append({
             "차시": period,
-            "총원": total,
+            "자습 총 인원": total,
             "정기 결석": len(regular_absent_names),
-            "현원": possible_present,
-            "출석": actual_present,
-            "결석": len(absent_names_only),
+            "총원": possible_present,
+            "현원": actual_present,
+            "결원": len(absent_names_only),
             "결석자 이름": ", ".join(sorted(absent_names_only)) if absent_names_only else "-",
             "출석률": f"{attendance_rate:.0f}%"
         })
