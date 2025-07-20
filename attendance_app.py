@@ -118,44 +118,50 @@ if st.button("💾 출석 기록 저장(체크 표시하고 꼭 눌러야 저장
     save_data(attendance_df)
     st.success("출석 기록이 저장되었습니다!")
 
-# 차시별 출석 요약
 if not attendance_df.empty:
     today_df = attendance_df[attendance_df["날짜"] == date_str]
     summary = []
+
     for period in periods:
         period_df = today_df[today_df["차시"] == period]
         total = len(students)
+
         # 정기 결석자 이름 집합
         regular_absent_names = set()
         for name, rules in regular_absents.items():
             for p, days in rules:
                 if p == period and weekday_kor in days:
                     regular_absent_names.add(name)
+
+        # 출석 처리된 학생 중 정기 결석자 제외
         present_names = set(period_df[period_df["상태"] == "출석"]["이름"])
         actual_present = len(present_names - regular_absent_names)
+
+        # 결석자 (정기 결석 제외)
         absent_names = set(period_df[period_df["상태"] == "결석"]["이름"])
-        # 결석자 중 정기 결석자 제외
         absent_names_only = absent_names - regular_absent_names
 
+        # 출석률 계산
+        possible_present = total - len(regular_absent_names)
         attendance_rate = (
-            (actual_present / (total - len(regular_absent_names))) * 100
-            if (total - len(regular_absent_names)) > 0 else 0
+            (actual_present / possible_present) * 100
+            if possible_present > 0 else 0
         )
 
         summary.append({
             "차시": period,
-            "총원": total - len(regular_absent_names),
-            "현원": len(present_names),
+            "총원": total,
             "정기 결석": len(regular_absent_names),
-            "결원 번호,이름": ", ".join(sorted(absent_names_only)) if absent_names_only else "-",
-            "결원": len(absent_names_only),
-            "--": actual_present,
+            "현원": possible_present,
+            "출석": actual_present,
+            "결석": len(absent_names_only),
+            "결석자 이름": ", ".join(sorted(absent_names_only)) if absent_names_only else "-",
             "출석률": f"{attendance_rate:.0f}%"
         })
 
     st.subheader("📈 자습 인원(칠판에 적을 내용)")
     st.dataframe(pd.DataFrame(summary).set_index("차시"), use_container_width=True)
-
+    
 # 출석 기록 테이블
 if not attendance_df.empty:
     today_df = attendance_df[attendance_df["날짜"] == date_str]
