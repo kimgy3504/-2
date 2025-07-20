@@ -150,18 +150,18 @@ if not attendance_df.empty:
 
         summary.append({
             "차시": period,
-            "자습 총 인원": total,
+            "총원": total,
             "정기 결석": len(regular_absent_names),
-            "총원": possible_present,
-            "현원": actual_present,
-            "결원": len(absent_names_only),
+            "현원": possible_present,
+            "출석": actual_present,
+            "결석": len(absent_names_only),
             "결석자 이름": ", ".join(sorted(absent_names_only)) if absent_names_only else "-",
             "출석률": f"{attendance_rate:.0f}%"
         })
 
     st.subheader("📈 자습 인원(칠판에 적을 내용)")
     st.dataframe(pd.DataFrame(summary).set_index("차시"), use_container_width=True)
-    
+
 # 출석 기록 테이블
 if not attendance_df.empty:
     today_df = attendance_df[attendance_df["날짜"] == date_str]
