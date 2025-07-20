@@ -178,5 +178,5 @@ if not attendance_df.empty:
                 display_df.loc[r, c] = f"❌ {reason}"
             elif status == "출석":
                 display_df.loc[r, c] = "✅"
-st.subheader("📄 임시 출석 기록")
+st.subheader("📄 개인 출석 기록 ")
 st.dataframe(display_df, use_container_width=True)
